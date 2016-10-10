@@ -1,46 +1,41 @@
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.util.Properties;
 
 import com.ibm.watson.developer_cloud.text_to_speech.v1.TextToSpeech;
 import com.ibm.watson.developer_cloud.text_to_speech.v1.model.AudioFormat;
 import com.ibm.watson.developer_cloud.text_to_speech.v1.model.Voice;
-import com.ibm.watson.developer_cloud.text_to_speech.v1.util.WaveUtils;
 
 /**
- * Translate from English to Spanish and synthesize that as a WAV file.
+ * This class provides the function of synthesizing English voice from text.
+ * @author helunwen
  */
 public class TextToVoice {
-
-  public static void main(String[] args) throws IOException {
-
-    TextToSpeech synthesizer = new TextToSpeech();
-    synthesizer.setUsernameAndPassword("58cf06d8-ee55-400a-98e2-918e138ba3e9", "t5Odue7bv4rQ");
-
-    String text = "Greetings from Watson Developer Cloudl";
-
-    // synthesize
-    InputStream in = synthesizer.synthesize(text, Voice.EN_LISA, AudioFormat.WAV).execute();
-    writeToFile(WaveUtils.reWriteWaveHeader(in), new File("output.wav"));
-  }
-
-  /**
-   * Write the input stream to a file.
-   */
-  private static void writeToFile(InputStream in, File file) {
-    try {
-      OutputStream out = new FileOutputStream(file);
-      byte[] buf = new byte[1024];
-      int len;
-      while ((len = in.read(buf)) > 0) {
-        out.write(buf, 0, len);
-      }
-      out.close();
-      in.close();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
+	
+	private Properties properties;
+	private TextToSpeech synthesizer;
+	
+	public TextToVoice() {
+		this.properties = new Properties();
+		try {
+			properties.load(new FileInputStream("resource/credentials.properties"));
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+		}
+		
+		this.synthesizer = new TextToSpeech();
+		synthesizer.setUsernameAndPassword(properties.getProperty("username"), properties.getProperty("password"));
+	}
+	
+	/**
+	 * Synthesize voice stream from text
+	 * 
+	 * @param text text which will be synthesized as voice input stream
+	 * 
+	 * @return {@link InputStream} of voice with .wav format
+	 * */
+	public InputStream synthesizeVoice(String text) {
+		return this.synthesizer.synthesize(text, Voice.EN_LISA, AudioFormat.WAV).execute();
+	}
 }
